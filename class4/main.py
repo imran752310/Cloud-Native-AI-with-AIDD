@@ -1,6 +1,6 @@
 import os
-from fastapi import Depends, FastAPI
-from sqlmodel import SQLModel, Field, create_engine, Session
+from fastapi import Depends, FastAPI, HTTPException
+from sqlmodel import SQLModel, Field, create_engine, Session, select
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -30,8 +30,50 @@ create_tables()
 
 app = FastAPI()
  
-@app.post("/task")
+@app.post("/tasks")
 def create_task(task: Task, session: Session = Depends(get_session)):
     session.add(task)
     session.commit()
+    session.refresh(task)
+    return task
+
+@app.get("/tasks")
+def get_task(session: Session = Depends(get_session)):
+    tasks = session.exec(select(Task)).all()   
+    return tasks
+
+# get single record 
+@app.get("/tasks/{task_id}")
+def get_task(task_id: int, session:Session = Depends(get_session)):
+    task = session.get(Task, task_id)
+    return task
+
+# delete record 
+
+# DELETE
+@app.delete("/tasks/{task_id}")
+def delete_task(task_id: int, session: Session = Depends(get_session)):
+    task = session.get(Task, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    session.delete(task)
+    session.commit()
+    return {"message": "Task deleted", "id": task_id}
+
+@app.put("/tasks/{task_id}", response_model=Task)
+def update_task(
+    task_id: int,
+    task_data: Task,
+    session: Session = Depends(get_session)
+):
+    task = session.get(Task, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    task.title = task_data.title
+    task.description = task_data.description
+    session.add(task)
+    session.commit()
+    session.refresh(task)
     return task
