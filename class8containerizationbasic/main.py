@@ -11,4 +11,9 @@ def root():
 @app.get("/health")
 def health_check():
     """Health Check endpoint"""
-    return {"Status": " ok and good"}
+    return {"Status": " Your health is Good"}
+
+@app.get("/pak")
+def health_check():
+    """Health Check endpoint"""
+    return {"Status": "my Country is pakistan"}
