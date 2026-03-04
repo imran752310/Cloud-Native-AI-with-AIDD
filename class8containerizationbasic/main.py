@@ -17,3 +17,7 @@ def health_check():
 def health_check():
     """Health Check endpoint"""
     return {"Status": "my Country is pakistan"}
+@app.get("/pak")
+def health_check():
+    """Health Check endpoint"""
+    return {"Status": "my Country is pakistan"}
